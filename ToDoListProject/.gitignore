@@ -1,0 +1,52 @@
+# Django
+*.log
+*.pot
+*.py[cod]
+__pycache__/
+db.sqlite3
+media/
+staticfiles/
+local_settings.py
+.env
+
+# Environments
+.env.*
+venv/
+ENV/
+env/
+*.venv
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# PyCharm
+.idea/
+
+# Byte-compiled / optimized / DLL files
+*.pyc
+*.pyo
+*.pyd
+
+# Test and coverage files
+htmlcov/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+
+# Migrations
+**/migrations/
+*/migrations/*.pyc
+*/migrations/*.py
+
+# Node modules (if using frontend tools)
+node_modules/
+
+# Others
+*.bak
+*.swp
