@@ -1,4 +1,3 @@
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Task
@@ -6,14 +5,30 @@ from .serializers import TaskSerializer
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework import filters
+from rest_framework.pagination import PageNumberPagination
+
 
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def task_list(request):
     if request.method == 'GET':
         tasks = Task.objects.all()
-        serializer = TaskSerializer(tasks, many=True)
-        return Response(serializer.data)
+
+        searchTitle = request.GET.get('search')
+        if searchTitle:
+            tasks = tasks.filter(title__icontains=searchTitle)
+        
+        searchIsCompleted = request.GET.get('completed')
+        if searchIsCompleted in ['true', 'false']:
+            tasks = tasks.filter(completed=(searchIsCompleted == 'true'))
+
+        print(tasks)
+        paginator = PageNumberPagination()
+        paginator.page_size = 2
+        result = paginator.paginate_queryset(tasks, request)
+        serializer = TaskSerializer(result, many=True)
+        return paginator.get_paginated_response(serializer.data)
     
     elif request.method == 'POST':
         serializer = TaskSerializer(data=request.data)

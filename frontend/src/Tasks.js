@@ -4,10 +4,22 @@ import API from './api';
 function Tasks({ onLogout }) {
   const [tasks, setTasks] = useState([]);
   const [newTitle, setNewTitle] = useState('');
+  const [search, setSearch] = useState('');
+  const [showCompleted, setShowCompleted] = useState('');
+  const [filters, setFilters] = useState({ search: '', completed: '' });
+  const [page, setPage] = useState(1);
+  const [count, setCount] = useState(0);
+
 
   const fetchTasks = async () => {
-    const res = await API.get('tasks/');
-    setTasks(res.data);
+    let url = `tasks/?page=${page}`;
+    if (filters.search) url += `&search=${filters.search}`;
+    if (filters.completed) url += `&completed=${filters.completed}`;
+
+    const res = await API.get(url);
+    setTasks(res.data.results);
+    setCount(res.data.count);
+
   };
 
   const createTask = async () => {
@@ -32,34 +44,20 @@ function Tasks({ onLogout }) {
 
   useEffect(() => {
     fetchTasks();
-  }, []);
+  }, [page, filters]);
 
+  const handleFilter = () => {
+    setFilters({
+      search: search.trim(),
+      completed: showCompleted,
+    });
+    setPage(1);
+  };
+
+  const totalPages = Math.ceil(count / 2);
   return (
-    /*<div>
-      <h2>Minhas Tarefas</h2>
-      <input
-        value={newTitle}
-        onChange={e => setNewTitle(e.target.value)}
-        placeholder="Nova tarefa"
-      />
-      <button onClick={createTask}>Adicionar</button>
-      <ul>
-        {tasks.map(task => (
-          <li key={task.id}>
-            <span
-              onClick={() => toggleCompleted(task)}
-              style={{ textDecoration: task.completed ? 'line-through' : 'none', cursor: 'pointer' }}
-            >
-              {task.title}
-            </span>
-            <button onClick={() => deleteTask(task.id)}>Excluir</button>
-          </li>
-        ))}
-      </ul>
-      <button onClick={onLogout}>Sair</button>
-    </div>*/
-    <div style={{ padding: '20px', maxWidth: 600, margin: '0 auto' }}>
-      <h1>📝 Lista de Tarefas</h1>
+    <div style={{ padding: 20 }}>
+      <h2>📋 Lista de Tarefas</h2>
 
       <div style={{ marginBottom: 20 }}>
         <input
@@ -74,9 +72,28 @@ function Tasks({ onLogout }) {
         </button>
       </div>
 
+      <div style={{ marginBottom: 10 }}>
+        <input
+          placeholder="Buscar..."
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+        />
+
+        <select
+          value={showCompleted}
+          onChange={(e) => { setShowCompleted(e.target.value); setPage(1); }}
+          style={{ marginLeft: 10 }}
+        >
+          <option value="">Todas</option>
+          <option value="true">Concluídas</option>
+          <option value="false">Não Concluídas</option>
+        </select>
+        <button onClick={handleFilter} style={{ marginLeft: 10 }}>🔍 Filtrar</button>
+      </div>
+
       <ul>
         {tasks.map((task) => (
-          <li key={task.id} style={{ marginBottom: 10 }}>
+          <li key={task.id} style={{ marginBottom: 8 }}>
             <span
               onClick={() => toggleCompleted(task)}
               style={{
@@ -86,16 +103,19 @@ function Tasks({ onLogout }) {
             >
               {task.title}
             </span>
-            <button
-              onClick={() => deleteTask(task.id)}
-              style={{ marginLeft: 10, color: 'red' }}
-            >
-              Excluir
-            </button>
+            <button onClick={() => deleteTask(task.id)} style={{ marginLeft: 10 }}>Excluir</button>
           </li>
         ))}
       </ul>
-      <button onClick={onLogout}>Sair</button>
+
+      <div style={{ marginTop: 10 }}>
+        <button disabled={page <= 1} onClick={() => setPage(page - 1)}>⬅️</button>
+        <span style={{ margin: '0 10px' }}>
+          Página {page} de {totalPages}
+        </span>
+        <button disabled={page >= totalPages} onClick={() => setPage(page + 1)}>➡️</button>
+      </div>
+    <button onClick={onLogout}>Sair</button>
     </div>
   );
 }
