@@ -3,8 +3,12 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Task
 from .serializers import TaskSerializer
+from django.contrib.auth.models import User
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
 
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 def task_list(request):
     if request.method == 'GET':
         tasks = Task.objects.all()
@@ -19,6 +23,7 @@ def task_list(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
 def task_detail(request, pk):
     try:
         task = Task.objects.get(pk=pk)
@@ -39,3 +44,14 @@ def task_detail(request, pk):
     elif request.method == 'DELETE':
         task.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['POST'])
+def register_user(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
+
+    if User.objects.filter(username=username).exists():
+        return Response({'error': 'Usuário já existe'}, status=status.HTTP_400_BAD_REQUEST)
+
+    user = User.objects.create_user(username=username, password=password)
+    return Response({'message': 'Usuário criado com sucesso'}, status=status.HTTP_201_CREATED)
