@@ -5,7 +5,7 @@ function App() {
   const [tasks, setTasks] = useState([]);
   const [newTitle, setNewTitle] = useState('');
 
-  const API_URL = 'http://localhost:8000/api/';
+  const API_URL = 'http://localhost:8000/api/tasks/';
 
   useEffect(() => {
     fetchTasks();
@@ -21,6 +21,7 @@ function App() {
   };
 
   const addTask = async () => {
+    console.log(' tarefa:', newTitle);
     if (!newTitle.trim()) return;
     try {
       await axios.post(API_URL, { title: newTitle, completed: false });
