@@ -9,6 +9,7 @@ function Tasks({ onLogout }) {
   const [filters, setFilters] = useState({ search: '', completed: '' });
   const [page, setPage] = useState(1);
   const [count, setCount] = useState(0);
+  const PAGE_SIZE = 2;
 
 
   const fetchTasks = async () => {
@@ -54,7 +55,7 @@ function Tasks({ onLogout }) {
     setPage(1);
   };
 
-  const totalPages = Math.ceil(count / 2);
+  const totalPages = Math.ceil(count / PAGE_SIZE);
   return (
     <div style={{ padding: 20 }}>
       <h2>📋 Lista de Tarefas</h2>

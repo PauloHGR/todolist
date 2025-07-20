@@ -8,22 +8,24 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework import filters
 from rest_framework.pagination import PageNumberPagination
 
+def apply_filters(request, tasks):
+    searchTitle = request.GET.get('search')
+    if searchTitle:
+        tasks = tasks.filter(title__icontains=searchTitle)
+    
+    searchIsCompleted = request.GET.get('completed')
+    if searchIsCompleted in ['true', 'false']:
+        tasks = tasks.filter(completed=(searchIsCompleted == 'true'))
+
+    return tasks
 
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def task_list(request):
     if request.method == 'GET':
         tasks = Task.objects.all()
+        tasks = apply_filters(request, tasks)
 
-        searchTitle = request.GET.get('search')
-        if searchTitle:
-            tasks = tasks.filter(title__icontains=searchTitle)
-        
-        searchIsCompleted = request.GET.get('completed')
-        if searchIsCompleted in ['true', 'false']:
-            tasks = tasks.filter(completed=(searchIsCompleted == 'true'))
-
-        print(tasks)
         paginator = PageNumberPagination()
         paginator.page_size = 2
         result = paginator.paginate_queryset(tasks, request)
